@@ -50,6 +50,7 @@ export default class Main extends Component {
           data: this.state.input,
           edit: false,
           editId: null,
+          input: '',
         }],
       })
 

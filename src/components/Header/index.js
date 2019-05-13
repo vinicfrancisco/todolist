@@ -1,11 +1,11 @@
 import React from 'react';
-import "./styles.css";
+import * as Styles from "./styles.js";
 
 const Header = () => {
   return (
-    <header id={'main-header'}>
+    <Styles.Container >
       To Do List
-    </header>
+    </Styles.Container>
   );
 }
 

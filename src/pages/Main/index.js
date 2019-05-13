@@ -1,106 +1,126 @@
 import React, { Component } from 'react';
 
-import {
-  Container,
-  Box,
-  ListBox,
-  TextInput,
-  Button,
-  ItemContainer,
-  Buttons,
-  ItemButton,
-  CheckboxContainer,
-  Checkbox,
-} from './styles';
+import * as Styles from './styles';
 
 export default class Main extends Component {
   state = {
     list: [],
     input: '',
-    counter: 1,
-    edit: false,
     editId: null,
+    editValue: '',
   };
+
+  generateId = () => {
+    const { list } = this.state;
+    const id = Math.round(Math.random() * 100);
+    if (list.length > 0) {
+      list.forEach(element => {
+        if (element.id === id) {
+          id = this.generateId();
+        }
+      });
+    } else {
+      return id;
+    }
+    return id;
+  }
 
   handleChange(event) {
     this.setState({ input: event.target.value })
   };
 
-  updateItem = item => {
-    this.setState({
-      input: item.data,
-      edit: true,
-      editId: item.id,
-    });
+  handleEdit(event) {
+    this.setState({ editValue: event.target.value })
   };
 
+  updateItem = id => {
+    const { list, editValue } = this.state;
+    list.forEach(element => {
+      if (element.id === id) {
+        element.data = editValue;
+      }
+      this.setState({
+        editId: null,
+        editValue: '',
+      });
+    })
+  }
   deleteItem = id => {
-    console.log(id)
+    const { list } = this.state;
     this.setState({
-      list: this.state.list.filter(item => item.id !== id)
+      list: list.filter(item => item.id !== id)
     });
   };
 
   addToDo = () => {
-    if (this.state.edit) {
-      const filtredList = this.state.list.filter(item => item.id != this.state.editId);
-      this.setState({
-        list: [...filtredList, {
-          id: this.state.editId,
-          data: this.state.input,
-          edit: false,
-          editId: null,
-          input: '',
-        }],
-      })
-
-    } else {
-      this.setState({
-        list: [...this.state.list, {
-          id: this.state.counter,
-          data: this.state.input,
-        }],
-        input: '',
-        counter: this.state.counter + 1,
-      })
-    };
+    const { input, list } = this.state;
+    const newId = this.generateId();
+    console.log(newId)
+    this.setState({
+      list: [...list, {
+        id: newId,
+        data: input,
+      }],
+      input: '',
+    })
   }
 
   render() {
+    const { input, list, editId, editValue } = this.state;
     return (
-      <Container>
-        <Box>
-          <TextInput
+      <Styles.Container>
+        <Styles.Box>
+          <Styles.TextInput
             type={'text'}
-            value={this.state.input}
+            value={input}
             onChange={this.handleChange.bind(this)}
             placeholder={'Insira um item para a lista'}
           />
-        </Box>
-        <Button onClick={this.addToDo}>
+        </Styles.Box>
+        <Styles.Button onClick={this.addToDo}>
           ADICIONAR
-        </Button>
-        <Box>
-          <ListBox>
-            {this.state.list.map(item =>
-              <ItemContainer key={item.id}>
-                <CheckboxContainer>
-                  <Checkbox type="checkbox" />
-                  <p>
-                    {item.data}
-                  </p>
-                </CheckboxContainer>
-                <Buttons>
-                  <ItemButton onClick={() => this.updateItem(item)}>EDIT</ItemButton>
-                  <ItemButton onClick={() => this.deleteItem(item.id)}>
+        </Styles.Button>
+        <Styles.Box>
+          <Styles.ListBox>
+            {list.map(item =>
+              <Styles.ItemContainer key={item.id}>
+                <Styles.CheckboxContainer>
+                  <Styles.Checkbox type="checkbox" />
+                  {editId === item.id ?
+                    <Styles.TextInput
+                      type={'text'}
+                      value={editValue}
+                      onChange={this.handleEdit.bind(this)}
+                      placeholder={'Edite o item'}
+                    /> :
+                    <p>
+                      {item.data}
+                    </p>}
+
+                </Styles.CheckboxContainer>
+                <Styles.Buttons>
+                  {editId === item.id ?
+                    <Styles.ItemButton onClick={() =>
+                      this.updateItem(item.id)}>
+                      SAVE
+                  </Styles.ItemButton> :
+                    <Styles.ItemButton onClick={() =>
+                      this.setState({
+                        editId: item.id,
+                        editValue: item.data
+                      })}>
+                      EDIT
+                  </Styles.ItemButton>}
+                  <Styles.ItemButton onClick={() =>
+                    this.deleteItem(item.id)}>
                     REMOVE
-                  </ItemButton>
-                </Buttons>
-              </ItemContainer>
+                  </Styles.ItemButton>
+                </Styles.Buttons>
+              </Styles.ItemContainer>
             )}
-          </ListBox>
-        </Box>
-      </Container>
+          </Styles.ListBox>
+        </Styles.Box>
+      </Styles.Container>
     );
   }
 }

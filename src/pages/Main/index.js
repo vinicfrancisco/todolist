@@ -1,83 +1,46 @@
 import React, { Component } from 'react';
-
+import { Creators as TodoActions } from '../../store/ducks/todo';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import * as Styles from './styles';
 
-export default class Main extends Component {
+class Main extends Component {
   state = {
-    list: [],
     input: '',
-    editId: null,
     editValue: '',
+    editId: null,
   };
 
-  generateId = () => {
-    const { list } = this.state;
-    let id = Math.round(Math.random() * 100);
-    if (list.length > 0) {
-      list.forEach(element => {
-        if (element.id === id) {
-          id = this.generateId();
-        }
-      });
-    } else {
-      return id;
-    }
-    return id;
-  }
-
   handleChange(event) {
-    this.setState({ input: event.target.value })
+    const { value } = event.target;
+    this.setState({ input: value });
   };
 
   handleEdit(event) {
-    this.setState({ editValue: event.target.value })
+    const { value } = event.target;
+    this.setState({ editValue: value });
   };
-
-  updateItem = id => {
-    const { list, editValue } = this.state;
-    list.forEach(element => {
-      if (element.id === id) {
-        element.data = editValue;
-      }
-      this.setState({
-        editId: null,
-        editValue: '',
-      });
-    })
-  }
-  deleteItem = id => {
-    const { list } = this.state;
-    this.setState({
-      list: list.filter(item => item.id !== id)
-    });
-  };
-
-  addToDo = () => {
-    const { input, list } = this.state;
-    const newId = this.generateId();
-    console.log(newId)
-    this.setState({
-      list: [...list, {
-        id: newId,
-        data: input,
-      }],
-      input: '',
-    })
-  }
 
   render() {
-    const { input, list, editId, editValue } = this.state;
+    const { addTodo, removeItem, updateItem } = this.props;
+    const { list } = this.props.todo;
+    const { input, editId, editValue } = this.state;
     return (
       <Styles.Container>
         <Styles.Box>
           <Styles.TextInput
-            type={'text'}
+            type="text"
             value={input}
             onChange={this.handleChange.bind(this)}
             placeholder={'Insira um item para a lista'}
           />
         </Styles.Box>
-        <Styles.Button onClick={this.addToDo}>
+        <Styles.Button onClick={() => {
+          this.setState({
+            input: '',
+          })
+          addTodo(input)
+        }}>
           ADICIONAR
         </Styles.Button>
         <Styles.Box>
@@ -88,7 +51,7 @@ export default class Main extends Component {
                   <Styles.Checkbox type="checkbox" />
                   {editId === item.id ?
                     <Styles.TextInput
-                      type={'text'}
+                      type="text"
                       value={editValue}
                       onChange={this.handleEdit.bind(this)}
                       placeholder={'Edite o item'}
@@ -100,19 +63,24 @@ export default class Main extends Component {
                 </Styles.CheckboxContainer>
                 <Styles.Buttons>
                   {editId === item.id ?
-                    <Styles.ItemButton onClick={() =>
-                      this.updateItem(item.id)}>
+                    <Styles.ItemButton onClick={() => {
+                      updateItem(item.id, editValue)
+                      this.setState({
+                        editValue: '',
+                        editId: '',
+                      })
+                    }}>
                       SAVE
                   </Styles.ItemButton> :
                     <Styles.ItemButton onClick={() =>
                       this.setState({
                         editId: item.id,
-                        editValue: item.data
+                        editValue: item.data,
                       })}>
                       EDIT
                   </Styles.ItemButton>}
                   <Styles.ItemButton onClick={() =>
-                    this.deleteItem(item.id)}>
+                    removeItem(item.id)}>
                     REMOVE
                   </Styles.ItemButton>
                 </Styles.Buttons>
@@ -124,3 +92,10 @@ export default class Main extends Component {
     );
   }
 }
+const mapStateToProps = state => ({
+  todo: state.todo,
+});
+const mapDispatchToProps = dispatch =>
+  bindActionCreators(TodoActions, dispatch);
+
+export default connect(mapStateToProps, mapDispatchToProps)(Main)

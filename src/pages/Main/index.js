@@ -12,7 +12,7 @@ export default class Main extends Component {
 
   generateId = () => {
     const { list } = this.state;
-    const id = Math.round(Math.random() * 100);
+    let id = Math.round(Math.random() * 100);
     if (list.length > 0) {
       list.forEach(element => {
         if (element.id === id) {
